@@ -176,7 +176,12 @@ nav ul li a: hover
     </nav>
     <div id="map"></div>
     <script>
-
+ function autoResizeDiv()
+        {
+            document.getElementById('main').style.height = window.innerHeight +'px';
+        }
+        window.onresize = autoResizeDiv;
+        autoResizeDiv();
       var lat,lon,rad,id;
       // FB.api('/me',function(response){
       //       id = response.id;
@@ -309,7 +314,7 @@ function CustomControl(controlDiv, map) {
     </script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyApXsh2QWtPVWT-5gjCvZkT7N-TLMNxWgk&libraries=drawing&callback=initMap"
          async defer></script>
-<div style="text-align: center;padding-top: 2%;font-family: verdana;background-color: black;">
+<div style="text-align: center;font-family: verdana;background-color: black;">
 <a href="/" onClick=submitCircle() style="text-decoration: none;color: white;font-size: 20px;" > Submit </a></div>
   </body>
 </html>

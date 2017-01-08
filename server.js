@@ -31,6 +31,13 @@ app.get('/getCircle',function(req,res){
 	});
 })
 
+app.get('/userEmails', function(req,res){
+	db.collection('userdetails').find().toArray(function(err,result){         
+		console.log(result);         
+		res.json(result);   
+	});
+})
+
 app.post('/updateLocation',function(req,res){
 	console.log(req.body.id);
 	db.collection('userdetails').update({id: req.body.id},{ $set: {lat: req.body.lat, lon: req.body.lon} })
