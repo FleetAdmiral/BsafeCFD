@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <title>BSafe</title>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+    <meta charset="utf-8">
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 85%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #200;
+}
+
+li {
+    float: left;
+}
+
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover {
+    background-color: #300;
+}
+
+nav ul
+{
+	text-align: center;
+	background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 255, 0.3);)
+	width: 50%;
+	box-shadow: 0 0 25px rgba(0, 0, 255, 0.3), inset 0 0 1px rgba(255, 255, 255, 0.6);
+}
+nav ul li
+{
+	display: inline-block;
+}
+nav ul li a
+{
+	padding: 20px;
+	font-family: "Roboto";
+	color: rgba(255,255,0,0.3);
+	text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.4);
+	font-size: 25px;
+	text-decoration: none;
+	display: block;
+}
+nav ul li a: hover
+{
+	 box-shadow: 0 0 10px rgba(0, 0, 0, 0.1), inset 0 0 1px rgba(255, 255, 255, 0.6);
+	 background: rgba(0, 0, 255, 0.3);
+	 color: rgba(0, 0, 255, 0.3);
+
+
+}
+
+    </style>
+  </head>
+  <body>
+  <script>
+    function statusChangeCallback(response) {
+    console.log('statusChangeCallback');
+    console.log(response);
+    // The response object is returned with a status field that lets the
+    // app know the current login status of the person.
+    // Full docs on the response object can be found in the documentation
+    // for FB.getLoginStatus().
+    if (response.status === 'connected') {
+      // Logged into your app and Facebook.
+      testAPI(response);
+    } else if (response.status === 'not_authorized') {
+      // The person is logged into Facebook, but not your app.
+      document.getElementById('status').innerHTML = 'Please log ' +
+        'into this app.';
+    } else {
+      // The person is not logged into Facebook, so we're not sure if
+      // they are logged into this app or not.
+      document.getElementById('status').innerHTML = 'Please log ' +
+        'into Facebook.';
+    }
+  }
+
+  // This function is called when someone finishes with the Login
+  // Button.  See the onlogin handler attached to it in the sample
+  // code below.
+  function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+        statusChangeCallback(response);
+    });
+  }
+
+  window.fbAsyncInit = function() {
+  FB.init({
+    appId      : '1196499727132816',
+    cookie     : true,  // enable cookies to allow the server to access 
+                        // the session
+    xfbml      : true,  // parse social plugins on this page
+    version    : 'v2.8' // use graph api version 2.8
+  });
+
+  // Now that we've initialized the JavaScript SDK, we call 
+  // FB.getLoginStatus().  This function gets the state of the
+  // person visiting this page and can return one of three states to
+  // the callback you provide.  They can be:
+  //
+  // 1. Logged into your app ('connected')
+  // 2. Logged into Facebook, but not your app ('not_authorized')
+  // 3. Not logged into Facebook and can't tell if they are logged into
+  //    your app or not.
+  //
+  // These three cases are handled in the callback function.
+
+  FB.getLoginStatus(function(response) {
+    statusChangeCallback(response);
+  });
+
+  };
+
+  // Load the SDK asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  // Here we run a very simple test of the Graph API after login is
+  // successful.  See statusChangeCallback() for when this call is made.
+  function testAPI(res) {
+    console.log('Welcome!  Fetching your information.... ');
+    var uid,accessToken;
+    tok = res.authResponse.accessToken;
+    FB.api('/me?fields=name,email,gender',{accessToken : tok},function(response) {
+      console.log('Successful login for: ' + response.name);
+      document.getElementById('status').innerHTML =
+        'Thanks for logging in, ' + response.name + '!';
+      uid = response.id;
+      id = uid;
+      $.ajax({
+  url: '/sendata',
+  data: { id: response.id, name: response.name, email: response.email, gender: response.gender},
+  type: 'POST',
+});
+    });
+    // $.post( "/sendata", { "details" : resp } );
+    
+    }
+    </script>
+  	<nav>
+    <ul>
+      <li><a href="/" style="font-family:verdana;font-size: 30px;">BSafe</a></li>
+      <li><a class="active" href="/" style="font-family:verdana; font-size: 20px;">View</a></li>
+      <li><a href="/view" style="font-family:verdana; font-size: 20px;">Mark</a></li>
+     <li><a href="/angels" style="font-family:verdana; font-size: 20px;">Angels</a></li>
+     <li><fb:login-button scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button></li>
+      <li><div id="status"></div></li>
+    </ul>
+    </nav>
+    <div id="map"></div>
+    <script>
+
+      var lat,lon,rad,id;
+      // FB.api('/me',function(response){
+      //       id = response.id;
+      //       alert(id);
+      // })
+      // This example requires the Drawing library. Include the libraries=drawing
+      // parameter when you first load the API. For example:
+      // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=drawing">
+
+      function submitCircle()
+      {
+        $.ajax({
+            url: '/submitCircle',
+            data: { id: id,lat: lat, lon: lon, rad: rad},
+            type: 'POST',
+          });
+      }
+
+      function initMap() {
+        var map = new google.maps.Map(document.getElementById('map'), {
+          center: {lat: 37.782551, lng: -122.445368},
+          zoom: 13,
+        });
+
+        var drawingManager = new google.maps.drawing.DrawingManager({
+          drawingMode: google.maps.drawing.OverlayType.MARKER,
+          drawingControl: true,
+          drawingControlOptions: {
+            position: google.maps.ControlPosition.TOP_CENTER,
+            drawingModes: ['circle']
+          },
+          circleOptions: {
+      fillColor: '#FF0000',
+      fillOpacity: 0.2,
+      strokeWeight: 5,
+      clickable: false,
+      editable: true,
+      zIndex: 1
+    }
+        });
+        drawingManager.setMap(map);
+        var infoWindow = new google.maps.InfoWindow({map: map});
+
+        // Try HTML5 geolocation.
+        if (navigator.geolocation) { // asks permission for location
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+            infoWindow.setPosition(pos);
+            infoWindow.setContent('Location found.');
+            map.setCenter(pos);
+          }, function() {
+            handleLocationError(true, infoWindow, map.getCenter());
+          });
+                } else {
+          // Browser doesn't support Geolocation
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+        var polygon=[];
+        google.maps.event.addDomListener(drawingManager, 'overlaycomplete', function(polygon) {
+                
+                rad = polygon.overlay.getRadius();
+                var center = polygon.overlay.getCenter();
+                lat = center.lat();
+                lon = center.lng();
+      //           var coordinatesArray = polygon.overlay.getPath().getArray();
+      //           for(i=0;i<coordinatesArray.length;i++)
+      //           {
+      //             alert(coordinatesArray[i]);
+      //            }
+      //   var bermudaTriangle = new google.maps.Polygon({
+      //   paths: coordinatesArray,
+      //   strokeColor: '#FF0000',
+      //     strokeOpacity: 0.6,
+      //   strokeWeight: 3,
+      //   fillColor: '#FF0000',
+      //   fillOpacity: 0.35
+      // });
+      //  bermudaTriangle.setMap(map);
+
+  });
+      }
+      function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(browserHasGeolocation ?
+                              'Error: The Geolocation service failed.' :
+                              'Error: Your browser doesn\'t support geolocation.');
+      }
+      // Create the DIV to hold the control and call the CustomControl() constructor passing in this DIV.
+var customControlDiv = document.createElement('div');
+var customControl = new CustomControl(customControlDiv, map);
+
+customControlDiv.index = 1;
+map.controls[google.maps.ControlPosition.TOP_CENTER].push(customControlDiv);
+
+function CustomControl(controlDiv, map) {
+
+    // Set CSS for the control border
+    var controlUI = document.createElement('div');
+    controlUI.style.backgroundColor = '#ffff99';
+    controlUI.style.borderStyle = 'solid';
+    controlUI.style.borderWidth = '1px';
+    controlUI.style.borderColor = '#ccc';
+    controlUI.style.height = '23px';
+    controlUI.style.marginTop = '5px';
+    controlUI.style.marginLeft = '-6px';
+    controlUI.style.paddingTop = '1px';
+    controlUI.style.cursor = 'pointer';
+    controlUI.style.textAlign = 'center';
+    controlUI.title = 'Click to set the map to Home';
+    controlDiv.appendChild(controlUI);
+
+    // Set CSS for the control interior
+    var controlText = document.createElement('div');
+    controlText.style.fontFamily = 'Arial,sans-serif';
+    controlText.style.fontSize = '10px';
+    controlText.style.paddingLeft = '4px';
+    controlText.style.paddingRight = '4px';
+    controlText.style.marginTop = '-8px';
+    controlText.innerHTML = 'Custom';
+    controlUI.appendChild(controlText);
+
+    // Setup the click event listeners
+    google.maps.event.addDomListener(controlUI, 'click', function () {
+        alert('Custom control clicked');
+    });
+}
+    </script>
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyApXsh2QWtPVWT-5gjCvZkT7N-TLMNxWgk&libraries=drawing&callback=initMap"
+         async defer></script>
+<div style="text-align: center;padding-top: 2%;font-family: verdana;background-color: black;">
+<a href="/" onClick=submitCircle() style="text-decoration: none;color: white;font-size: 20px;" > Submit </a></div>
+  </body>
+</html>

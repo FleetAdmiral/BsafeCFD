@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+    <meta charset="utf-8">
+    <title>BSafe</title>
+    <style>
+      /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+      #map {
+        height: 100%;
+      }
+      /* Optional: Makes the sample page fill the window. */
+      html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+      }
+      #floating-panel {
+        position: absolute;
+        top: 10px;
+        left: 25%;
+        z-index: 5;
+        background-color: #fff;
+        padding: 5px;
+        border: 1px solid #999;
+        text-align: center;
+        font-family: 'Roboto','sans-serif';
+        line-height: 30px;
+        padding-left: 10px;
+      }
+      #floating-panel {
+        background-color: #fff;
+        border: 1px solid #999;
+        left: 50%;
+        padding: 5px;
+        position: absolute;
+        top: 10px;
+        z-index: 5;
+      }
+      ul {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    background-color: #200;
+}
+
+li {
+    float: left;
+}
+
+li a {
+    display: block;
+    color: white;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+}
+
+li a:hover {
+    background-color: #300;
+}
+
+nav ul
+{
+  text-align: center;
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(0, 0, 255, 0.3);)
+  width: 50%;
+  box-shadow: 0 0 25px rgba(0, 0, 255, 0.3), inset 0 0 1px rgba(255, 255, 255, 0.6);
+}
+
+nav ul li
+{
+  display: inline-block;
+}
+nav ul li a
+{
+  padding: 20px;
+  font-family: "Roboto";
+  color: rgba(255,255,0,0.3);
+  text-shadow: 1px 1px 1px rgba(255, 255, 255, 0.4);
+  font-size: 25px;
+  text-decoration: none;
+  display: block;
+}
+nav ul li a: hover
+{
+   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1), inset 0 0 1px rgba(255, 255, 255, 0.6);
+   background: rgba(0, 0, 255, 0.3);
+   color: rgba(0, 0, 255, 0.3);
+}
+
+
+    </style>
+  </head>
+
+  <body>
+  <script>
+    var id;
+    function statusChangeCallback(response) {
+    console.log('statusChangeCallback');
+    console.log(response);
+    // The response object is returned with a status field that lets the
+    // app know the current login status of the person.
+    // Full docs on the response object can be found in the documentation
+    // for FB.getLoginStatus().
+    if (response.status === 'connected') {
+      // Logged into your app and Facebook.
+
+      testAPI();
+    } else if (response.status === 'not_authorized') {
+      // The person is logged into Facebook, but not your app.
+      document.getElementById('status').innerHTML = 'Please log ' +
+        'into this app.';
+    } else {
+      // The person is not logged into Facebook, so we're not sure if
+      // they are logged into this app or not.
+      document.getElementById('status').innerHTML = 'Please log ' +
+        'into Facebook.';
+    }
+  }
+
+  // This function is called when someone finishes with the Login
+  // Button.  See the onlogin handler attached to it in the sample
+  // code below.
+  function checkLoginState() {
+    FB.getLoginStatus(function(response) {
+      statusChangeCallback(response);
+    });
+  }
+
+  window.fbAsyncInit = function() {
+  FB.init({
+    appId      : '1196499727132816',
+    cookie     : true,  // enable cookies to allow the server to access 
+                        // the session
+    xfbml      : true,  // parse social plugins on this page
+    version    : 'v2.8' // use graph api version 2.8
+  });
+
+  // Now that we've initialized the JavaScript SDK, we call 
+  // FB.getLoginStatus().  This function gets the state of the
+  // person visiting this page and can return one of three states to
+  // the callback you provide.  They can be:
+  //
+  // 1. Logged into your app ('connected')
+  // 2. Logged into Facebook, but not your app ('not_authorized')
+  // 3. Not logged into Facebook and can't tell if they are logged into
+  //    your app or not.
+  //
+  // These three cases are handled in the callback function.
+
+  FB.getLoginStatus(function(response) {
+    statusChangeCallback(response);
+  });
+
+  };
+
+  // Load the SDK asynchronously
+  (function(d, s, id) {
+    var js, fjs = d.getElementsByTagName(s)[0];
+    if (d.getElementById(id)) return;
+    js = d.createElement(s); js.id = id;
+    js.src = "//connect.facebook.net/en_US/sdk.js";
+    fjs.parentNode.insertBefore(js, fjs);
+  }(document, 'script', 'facebook-jssdk'));
+
+  // Here we run a very simple test of the Graph API after login is
+  // successful.  See statusChangeCallback() for when this call is made.
+  function testAPI() {
+    console.log('Welcome!  Fetching your information.... ');
+    FB.api('/me', function(response) {      
+      console.log('Successful login for: ' + response.name);
+      document.getElementById('status').innerHTML =
+        'Thanks for logging in, ' + response.name + '!';
+      id = response.id;
+      $.getJSON('/checkUser', {id: response.id}, function(data){
+        if(data.admin == 1)
+        {
+            document.getElementById('markable').style.display = "block";
+        }
+      });
+    });
+  }
+    </script>
+  <nav>
+    <ul>
+      <li><a href="/" style="font-family:verdana;font-size: 30px;">BSafe</a></li>
+      <li><a class="active" href="/" style="font-family:verdana;font-size: 20px;">View</a></li>
+      <li><a id= "markable" href="/view" style="font-family:verdana;font-size: 20px;display:none;">Mark</a></li>
+      <li><a href="/angels" style="font-family:verdana;font-size: 20px;">Angels</a></li>
+      <li><fb:login-button scope="public_profile,email" onlogin="checkLoginState();"></fb:login-button></li>
+      <li><div id="status"></div></li>
+    </ul>
+    </nav>
+    <!-- <div id="floating-panel">
+      <button onclick="toggleHeatmap()">Toggle Heatmap</button>
+      <button onclick="changeGradient()">Change gradient</button>
+      <button onclick="changeOpacity()">Change opacity</button>
+    </div> -->
+    <div id="map"></div>
+    <script>
+
+      // This example requires the Visualization library. Include the libraries=visualization
+      // parameter when you first load the API. For example:
+      // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=visualization">
+
+      var map, heatmap,id;
+      function CenterControl(controlDiv, map) {
+
+              // Set CSS for the control border.
+              var controlUI = document.createElement('div');
+              controlUI.style.backgroundColor = '#fff';
+              controlUI.style.border = '2px solid #fff';
+              controlUI.style.borderRadius = '3px';
+              controlUI.style.boxShadow = '0 2px 6px rgba(0,0,0,.3)';
+              controlUI.style.cursor = 'pointer';
+              controlUI.style.marginBottom = '22px';
+              controlUI.style.textAlign = 'center';
+              controlUI.title = 'Click to send SOS distress call.';
+              controlDiv.appendChild(controlUI);
+
+              // Set CSS for the control interior.
+              var controlText = document.createElement('div');
+              controlText.style.color = 'rgb(25,25,25)';
+              controlText.style.fontFamily = 'Roboto,Arial,sans-serif';
+              controlText.style.fontSize = '16px';
+              controlText.style.lineHeight = '38px';
+              controlText.style.paddingLeft = '5px';
+              controlText.style.paddingRight = '5px';
+              controlText.innerHTML = 'SOS';
+              controlUI.appendChild(controlText);
+
+              // Setup the click event listeners: simply set the map to Chicago.
+              controlUI.addEventListener('click', function() {
+                alert("SOS!");
+              });
+
+            }
+
+      function initMap() {
+        map = new google.maps.Map(document.getElementById('map'), {
+          zoom: 13,
+          center: {lat: 37.782551, lng: -122.445368},
+        });
+        var centerControlDiv = document.createElement('div');
+                var centerControl = new CenterControl(centerControlDiv, map);
+
+                centerControlDiv.index = 1;
+                map.controls[google.maps.ControlPosition.TOP_CENTER].push(centerControlDiv);
+        heatmap = new google.maps.visualization.HeatmapLayer({
+          data: getPoints(),
+          map: map
+        });
+        var infoWindow = new google.maps.InfoWindow({map: map});
+
+        // Try HTML5 geolocation.
+        if (navigator.geolocation) { // asks permission for location
+          navigator.geolocation.getCurrentPosition(function(position) {
+            var pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude
+            };
+
+            FB.api('/me', function(response) {      
+      console.log('Successful login for: ' + response.name);
+      id = response.id;
+      
+            $.ajax({
+            url: '/updateLocation',
+            data: { id: id,lat: pos.lat, lon: pos.lng},
+            type: 'POST',
+            });
+
+          });
+
+            infoWindow.setPosition(pos);
+            infoWindow.setContent('Location found.');
+            map.setCenter(pos);
+          }, function() {
+            handleLocationError(true, infoWindow, map.getCenter());
+          });
+        } else {
+          // Browser doesn't support Geolocation
+          handleLocationError(false, infoWindow, map.getCenter());
+        }
+      }
+      function handleLocationError(browserHasGeolocation, infoWindow, pos) {
+        infoWindow.setPosition(pos);
+        infoWindow.setContent(browserHasGeolocation ?
+                              'Error: The Geolocation service failed.' :
+                              'Error: Your browser doesn\'t support geolocation.');
+      }
+
+      function toggleHeatmap() {
+        heatmap.setMap(heatmap.getMap() ? null : map);
+      }
+
+      function changeGradient() {
+        var gradient = [
+          'rgba(0, 255, 255, 0)',
+          'rgba(0, 255, 255, 1)',
+          'rgba(0, 191, 255, 1)',
+          'rgba(0, 127, 255, 1)',
+          'rgba(0, 63, 255, 1)',
+          'rgba(0, 0, 255, 1)',
+          'rgba(0, 0, 223, 1)',
+          'rgba(0, 0, 191, 1)',
+          'rgba(0, 0, 159, 1)',
+          'rgba(0, 0, 127, 1)',
+          'rgba(63, 0, 91, 1)',
+          'rgba(127, 0, 63, 1)',
+          'rgba(191, 0, 31, 1)',
+          'rgba(255, 0, 0, 1)'
+        ]
+        heatmap.set('gradient', heatmap.get('gradient') ? null : gradient);
+      }
+
+      function changeRadius() {
+        heatmap.set('radius', heatmap.get('radius') ? null : 20);
+      }
+
+      function changeOpacity() {
+        heatmap.set('opacity', heatmap.get('opacity') ? null : 0.2);
+      }
+
+      function draw(element)
+      {
+          var center = {lat : Number(element.lat), lng: Number(element.lon)};
+          var circle = new google.maps.Circle({
+            strokeColor: '#FF0000',
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: '#FF0000',
+            fillOpacity: 0.35,
+            map: map,
+            center: center,
+            radius: Number(element.rad)
+          });
+
+      }
+      // Heatmap data: 500 Points
+      function getPoints() {
+
+        var points = [];
+
+        $.getJSON('/getCircle', function(data) {
+              $.each(data, function(index, element) {
+                  draw(element);
+              })
+        });
+        // $.get("http://localhost:3000/views", function(data, status){
+        //   for(var i = 0;i <= 20;i++){
+        //     alert(data[i].a);
+        //     points.push(new google.maps.LatLng(data[i].a, data[i].b));
+        //   }
+        // });
+        return points;
+      }
+    </script>
+    <script async defer
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyApXsh2QWtPVWT-5gjCvZkT7N-TLMNxWgk&libraries=visualization&callback=initMap">
+    </script>
+  </body>
+</html>
